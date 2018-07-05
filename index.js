@@ -191,19 +191,9 @@ instance.prototype.init = function() {
 	self.init_tcp();
 };
 
-var PSTATE_READY = 0,
-    PSTATE_MULTILINE = 1,
-		PSTATE_SINGLELINE = 2;
-
 instance.prototype.init_tcp = function() {
 	var self = this;
 	var receivebuffer = '';
-	self.pstate = PSTATE_READY;
-	self.pid = '';
-	self.multiline = '';
-	self.multilineError = '';
-	self.responseHandlers = {};
-	self.sendId = 0;
 
 	if (self.socket !== undefined) {
 		self.socket.destroy();
@@ -278,7 +268,8 @@ instance.prototype.config_fields = function () {
 			id: 'model',
 			label: 'Device Model',
 			choices: [ { id: 'HS410', label: 'AV-HS410' }, { id: 'HS50', label: 'AW-HS50' }],
-			default: 'HS410'
+			default: 'HS410',
+			width: 6
 		}
 	];
 };

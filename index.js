@@ -329,6 +329,23 @@ instance.prototype.actions = function(system) {
 					choices: self[model + '_CUTTARGETS']
 				}
 			]
+		},
+		'time': {
+			label: 'Auto transition time control (HS410)',
+			options: [
+				{
+					label: 'Target',
+					type: 'dropdown',
+					id: 'target',
+					choices: self[model + '_TARGETS']
+				},
+				{
+					label: 'Time (in number of frames)',
+					type: 'textinput',
+					id: 'frames',
+					regex: '/^0*([0-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9])$/'
+				}
+			]
 		}
 	});
 }
@@ -345,13 +362,28 @@ instance.prototype.action = function(action) {
 			break;
 
 		case 'auto':
-			self.sendCommand('SAUT:' + opt.target + ':0');
+			if (self.config.model == 'HS50') {
+				self.sendCommand('SAUT:' + opt.target + ':0');
+			} else {
+				self.sendCommand('SAUT:' + opt.target + ':0:0');
+			}
 			break;
 
 		case 'cut':
 			self.sendCommand('SCUT:' + opt.target);
 			break;
 
+		case 'time':
+			if (self.config.model == 'HS50') {
+				self.log('error', 'HS50 does not have support for setting auto transition times');
+				break;
+			}
+
+			if (parseInt(opt.frames) > 999) {
+				opt.frames = 999;
+			}
+			self.sendCommand('STIM:' + opt.target + ':' + ('000' + parseInt(opt.frames)).substr(-3));
+			break;
 	}
 
 	debug('action():', action.action);

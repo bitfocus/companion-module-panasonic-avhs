@@ -142,11 +142,11 @@ var HS50_TARGETS = [
 
 var HS410_CUTTARGETS = [
 	{ id: '00', label: 'BKGD' },
-	{ id: '00', label: 'KEY' },
-	{ id: '00', label: 'PinP1' },
-	{ id: '00', label: 'PinP2' },
-	{ id: '00', label: 'FTB' },
-	{ id: '00', label: 'DSK' }
+	{ id: '01', label: 'KEY' },
+	{ id: '04', label: 'PinP1' },
+	{ id: '05', label: 'PinP2' },
+	{ id: '06', label: 'FTB' },
+	{ id: '07', label: 'DSK' }
 ];
 
 var HS50_CUTTARGETS = HS410_CUTTARGETS.slice(0, 2);

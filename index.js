@@ -389,11 +389,5 @@ instance.prototype.action = function(action) {
 	debug('action():', action.action);
 };
 
-instance.module_info = {
-	label: 'Panasonic AV-HS410/AV-HS50',
-	id: 'panasonic-avhs',
-	version: '0.0.1'
-};
-
 instance_skel.extendedBy(instance);
 exports = module.exports = instance;

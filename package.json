@@ -1,7 +1,12 @@
 {
-  "name": "companion-module-panaonic-avhs",
-  "version": "0.0.1",
-  "description": "Companion module for Panasonic AW-HS50 and AV-HS410",
+  "name": "panasonic-avhs",
+  "version": "1.0.0",
+	"api_version": "1.0.0",
+	"keywords": [ "Vision Mixer" ],
+	"manufacturer": "Panasonic",
+	"product": "AV-HS50 / AV-HS410",
+	"shortname": "av-hs",
+  "description": "Companion module for Panasonic AV-HS50 and AV-HS410",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

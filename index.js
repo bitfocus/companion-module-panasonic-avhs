@@ -1,4 +1,5 @@
 var tcp = require('../../tcp');
+var udp = require('../../udp');
 var instance_skel = require('../../instance_skel');
 var debug;
 var log;
@@ -200,8 +201,19 @@ instance.prototype.init_tcp = function() {
 		delete self.socket;
 	}
 
+	if (self.udp !== undefined) {
+		self.udp.destroy();
+		delete self.udp;
+	}
+
+	if (self.udptimer) {
+		clearInterval(self.udptimer);
+		delete self.udptimer;
+	}
+
 	if (self.config.host) {
 		self.socket = new tcp(self.config.host, 60040);
+		self.udp    = new udp(self.config.host, 60040);
 
 		self.socket.on('status_change', function (status, message) {
 			self.status(status, message);
@@ -210,6 +222,10 @@ instance.prototype.init_tcp = function() {
 		self.socket.on('error', function (err) {
 			debug("Network error", err);
 			self.log('error',"Network error: " + err.message);
+		});
+
+		self.udp.on('error', function (err) {
+			debug("udp network error", err);
 		});
 
 		// Extract packet from STX/ETX from device
@@ -231,6 +247,12 @@ instance.prototype.init_tcp = function() {
 		self.socket.on('receivepacket', function (data) {
 			// Ready for feedbacks
 		});
+
+		if (self.config.model == 'HS410') {
+			self.udptimer = setInterval(function () {
+				self.sendUDPCommand('SPAT:0:00');
+			}, 500);
+		}
 	}
 };
 
@@ -241,6 +263,18 @@ instance.prototype.sendCommand = function(command) {
 		self.socket.send(STX + command + ETX);
 	} else {
 		debug('Socket not connected :(');
+	}
+};
+
+instance.prototype.sendUDPCommand = function(command) {
+	var self = this;
+
+	if (self.udp !== undefined) {
+		try {
+			self.udp.send(STX + command + ETX);
+		} catch (e) {
+			// ignore
+		}
 	}
 };
 

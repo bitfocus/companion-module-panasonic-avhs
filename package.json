@@ -1,16 +1,18 @@
 {
-  "name": "panasonic-avhs",
-  "version": "1.0.0",
+	"name": "panasonic-avhs",
+	"version": "1.0.1",
 	"api_version": "1.0.0",
-	"keywords": [ "Vision Mixer" ],
+	"keywords": [
+		"Vision Mixer"
+	],
 	"manufacturer": "Panasonic",
 	"product": "AV-HS50 / AV-HS410",
 	"shortname": "av-hs",
-  "description": "Companion module for Panasonic AV-HS50 and AV-HS410",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Håkon Nessjøen <haakon@bitfocus.io>",
-  "license": "ISC"
+	"description": "Companion module for Panasonic AV-HS50 and AV-HS410",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Håkon Nessjøen <haakon@bitfocus.io>",
+	"license": "MIT"
 }

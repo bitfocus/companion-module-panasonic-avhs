@@ -11,6 +11,31 @@ var log;
 var STX = String.fromCharCode(0x02);
 var ETX = String.fromCharCode(0x03);
 
+var UHS500_BUS = [
+	{ id: '01', label: 'ME1PGM' },
+	{ id: '02', label: 'ME1PVW' },
+	{ id: '03', label: 'ME1KEY1-F' },
+	{ id: '04', label: 'ME1KEY1-S' },
+	{ id: '05', label: 'ME1KEY2-F' },
+	{ id: '06', label: 'ME1KEY2-S' },
+	{ id: '07', label: 'ME1KEY3-F' },
+	{ id: '08', label: 'ME1KEY3-S' },
+	{ id: '97', label: 'DSK1-F' },
+	{ id: '98', label: 'DSK1-S' },
+	{ id: '99', label: 'DSK2-F' },
+	{ id: '100', label: 'DSK2-S' },
+	{ id: '113', label: 'AUX1' },
+        { id: '114', label: 'AUX2' },
+        { id: '115', label: 'AUX3' },
+        { id: '116', label: 'AUX4' },
+        { id: '150', label: 'VMEM-V' },
+        { id: '151', label: 'VMEM-K' },
+        { id: '153', label: 'MV1-1' },
+        { id: '168', label: 'MV1-16' },
+        { id: '169', label: 'MV2-1' },
+        { id: '184', label: 'MV2-16' }
+];
+
 var HS410_BUS = [
 	{ id: '00', label: 'Bus A' },
 	{ id: '01', label: 'Bus B' },
@@ -38,6 +63,50 @@ var HS50_BUS = [
 	{ id: '10', label: 'PinP' },
 	{ id: '12', label: 'Aux' }
 ];
+
+var UHS500_INPUTS = [
+	{ id: '01', label: 'IN1' },
+	{ id: '02', label: 'IN2' },
+	{ id: '03', label: 'SDI IN3' },
+	{ id: '04', label: 'SDI IN4' },
+	{ id: '05', label: 'SDI IN5' },
+	{ id: '06', label: 'SDI IN6' },
+	{ id: '07', label: 'SDI IN7' },
+	{ id: '08', label: 'SDI IN8' },
+	{ id: '145', label: 'CBGD1' },
+	{ id: '146', label: 'CBGD2' },
+	{ id: '147', label: 'CBAR' },
+	{ id: '148', label: 'BLACK' },
+	{ id: '149', label: 'STILL1-V' },
+	{ id: '150', label: 'STILL1-K' },
+	{ id: '151', label: 'STILL2-V' },
+	{ id: '152', label: 'STILL2-K' },
+	{ id: '157', label: 'CLIP1-V' },
+	{ id: '158', label: 'CLIP1-K' },
+	{ id: '159', label: 'CLIP2-V' },
+	{ id: '160', label: 'CLIP2-K' },
+	{ id: '165', label: 'MV1' },
+	{ id: '166', label: 'MV2' },
+	{ id: '171', label: 'KEY OUT' },
+	{ id: '172', label: 'CLN' },
+	{ id: '201', label: 'PGM' },
+	{ id: '203', label: 'PVW' },
+	{ id: '209', label: 'ME PGM' },
+	{ id: '227', label: 'AUX1' },
+	{ id: '228', label: 'AUX2' },
+	{ id: '229', label: 'AUX3' },
+	{ id: '230', label: 'AUX4' },
+	{ id: '251', label: 'CLOCK' },
+	{ id: '255', label: 'OPA IN1' },
+	{ id: '256', label: 'OPA IN2' },
+	{ id: '257', label: 'OPA IN3' },
+	{ id: '258', label: 'OPA IN4' },
+	{ id: '259', label: 'OPB IN1' },
+	{ id: '260', label: 'OPB IN2' },
+	{ id: '261', label: 'OPB IN3' },
+	{ id: '262', label: 'OPB IN4' }
+];
+
 
 var HS410_INPUTS = [
 	{ id: '00', label: 'XPT 1' },
@@ -156,6 +225,10 @@ function instance(system, id, config) {
 	var self = this;
 
 	// Because we use dynamic variables ex: self[model + '_INPUTS']
+        self.UHS500_INPUTS = UHS500_INPUTS;
+	self.UHS500_BUS = UHS500_BUS;
+	self.UHS500_TARGETS = UHS500_TARGETS;
+	self.UHS500_CUTTARGETS = UHS500_CUTTARGETS;
 	self.HS410_INPUTS = HS410_INPUTS;
 	self.HS410_BUS = HS410_BUS;
 	self.HS410_TARGETS = HS410_TARGETS;
@@ -212,8 +285,8 @@ instance.prototype.init_tcp = function() {
 	}
 
 	if (self.config.host) {
-		self.socket = new tcp(self.config.host, 60040);
-		self.udp    = new udp(self.config.host, 60040);
+		self.socket = new tcp(self.config.host, 62010);
+		self.udp    = new udp(self.config.host, 62010);
 
 		self.socket.on('status_change', function (status, message) {
 			self.status(status, message);
@@ -301,8 +374,8 @@ instance.prototype.config_fields = function () {
 			type: 'dropdown',
 			id: 'model',
 			label: 'Device Model',
-			choices: [ { id: 'HS410', label: 'AV-HS410' }, { id: 'HS50', label: 'AW-HS50' }],
-			default: 'HS410',
+			choices: [ { id: 'UHS500', label: 'AV-UHS500' }, { id: 'HS410', label: 'AV-HS410' }, { id: 'HS50', label: 'AW-HS50' }],
+			default: 'UHS500',
 			width: 6
 		}
 	];

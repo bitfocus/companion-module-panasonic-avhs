@@ -365,6 +365,13 @@ instance.prototype.config_fields = function () {
 			value: 'To control AV-HS410 you need to install the plug-in software for external interface control'
 		},
 		{
+			type: 'text',
+			id: 'info',
+			width: 12,
+			label: 'Information',
+			value: 'To control AV-UHS500 you need to change port number on menu/system/ExtPanel Info/Port no to 62040'
+		},
+		{
 			type: 'textinput',
 			id: 'host',
 			label: 'Device IP',

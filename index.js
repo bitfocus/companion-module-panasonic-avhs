@@ -286,8 +286,8 @@ instance.prototype.init_tcp = function() {
 	}
 
 	if (self.config.host) {
-		self.socket = new tcp(self.config.host, 62010);
-		self.udp    = new udp(self.config.host, 62010);
+		self.socket = new tcp(self.config.host, 62040);
+		self.udp    = new udp(self.config.host, 62040);
 
 		self.socket.on('status_change', function (status, message) {
 			self.status(status, message);

@@ -447,10 +447,16 @@ instance.prototype.init_tcp = function () {
 			// Ready for feedbacks
 		})
 
+		if (self.config.model == 'UHS500') {
+			self.udptimer = setInterval(function () {
+				self.sendCommand('SPAT:0:00')
+			}, 10000) // 10 sec keepalive command
+		}
+
 		if (self.config.model == 'HS410') {
 			self.udptimer = setInterval(function () {
 				self.sendCommand('SPAT:0:00')
-			}, 500)
+			}, 500) // 500 ms keepalive command
 
 			try {
 				self.listenMulticast()

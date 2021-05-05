@@ -1,15 +1,20 @@
-var tcp = require('../../tcp');
-var udp = require('../../udp');
-var instance_skel = require('../../instance_skel');
-var debug;
-var log;
+var tcp = require('../../tcp')
+var udp = require('../../udp')
+var dgram = require('dgram')
+var instance_skel = require('../../instance_skel')
+var debug
+var log
 
 // https://github.com/bitfocus/companion/files/2163236/AV-HS410-HS410_IF-Protocol-Ver1.3EVol_1.pdf
 // https://eww.pass.panasonic.co.jp/pro-av/support/dload/hs410_aux202/AV-HS410-AUXP_IP-Protocol-Ver1.3EVol_2.pdf
 // https://eww.pass.panasonic.co.jp/pro-av/support/content/guide/DEF/HS50_IP/AW-HS50InterfaceSpecifications-V1.00E.pdf
 
-var STX = String.fromCharCode(0x02);
-var ETX = String.fromCharCode(0x03);
+var STX = String.fromCharCode(0x02)
+var ETX = String.fromCharCode(0x03)
+
+// ##########################
+// #### Define Dropdowns ####
+// ##########################
 
 var HS410_BUS = [
 	{ id: '00', label: 'Bus A' },
@@ -20,13 +25,13 @@ var HS410_BUS = [
 	{ id: '05', label: 'Key Source' },
 	{ id: '06', label: 'DSK Fill' },
 	{ id: '07', label: 'DSK Source' },
-	{ id: '10', label: 'PinP1' },
-	{ id: '11', label: 'PinP2' },
+	{ id: '10', label: 'PinP 1' },
+	{ id: '11', label: 'PinP 2' },
 	{ id: '12', label: 'Aux 1' },
 	{ id: '13', label: 'Aux 2' },
 	{ id: '14', label: 'Aux 3' },
-	{ id: '15', label: 'Aux 4' }
-];
+	{ id: '15', label: 'Aux 4' },
+]
 
 var HS50_BUS = [
 	{ id: '00', label: 'Bus A' },
@@ -36,8 +41,8 @@ var HS50_BUS = [
 	{ id: '04', label: 'Key Fill' },
 	{ id: '05', label: 'Key Source' },
 	{ id: '10', label: 'PinP' },
-	{ id: '12', label: 'Aux' }
-];
+	{ id: '12', label: 'Aux' },
+]
 
 var HS410_INPUTS = [
 	{ id: '00', label: 'XPT 1' },
@@ -94,8 +99,9 @@ var HS410_INPUTS = [
 	{ id: '92', label: 'Still1K' },
 	{ id: '93', label: 'Still2K' },
 	{ id: '94', label: 'Clip1K' },
-	{ id: '95', label: 'Clip2K' }
-];
+	{ id: '95', label: 'Clip2K' },
+	{ id: '99', label: 'No selection' },
+]
 
 var HS50_INPUTS = [
 	{ id: '00', label: 'XPT 1' },
@@ -122,8 +128,8 @@ var HS50_INPUTS = [
 	{ id: '78', label: 'PVW' },
 	{ id: '79', label: 'KeyOut' },
 	{ id: '80', label: 'CLN' },
-	{ id: '81', label: 'Multi view' }
-];
+	{ id: '81', label: 'Multi view' },
+]
 
 var HS410_TARGETS = [
 	{ id: '00', label: 'BKGD' },
@@ -132,14 +138,14 @@ var HS410_TARGETS = [
 	{ id: '05', label: 'PinP 2' },
 	{ id: '06', label: 'FTB' },
 	{ id: '07', label: 'DSK' },
-];
+]
 
 var HS50_TARGETS = [
 	{ id: '00', label: 'BKGD' },
 	{ id: '01', label: 'KEY' },
 	{ id: '04', label: 'PinP' },
-	{ id: '06', label: 'FTB' }
-];
+	{ id: '06', label: 'FTB' },
+]
 
 var HS410_CUTTARGETS = [
 	{ id: '00', label: 'BKGD' },
@@ -147,140 +153,103 @@ var HS410_CUTTARGETS = [
 	{ id: '04', label: 'PinP1' },
 	{ id: '05', label: 'PinP2' },
 	{ id: '06', label: 'FTB' },
-	{ id: '07', label: 'DSK' }
-];
+	{ id: '07', label: 'DSK' },
+]
 
-var HS50_CUTTARGETS = HS410_CUTTARGETS.slice(0, 2);
+var HS50_CUTTARGETS = HS410_CUTTARGETS.slice(0, 2)
 
+// #####################################
+// #### Main Instance and Functions ####
+// #####################################
+
+// Create Instance
 function instance(system, id, config) {
-	var self = this;
+	var self = this
 
 	// Because we use dynamic variables ex: self[model + '_INPUTS']
-	self.HS410_INPUTS = HS410_INPUTS;
-	self.HS410_BUS = HS410_BUS;
-	self.HS410_TARGETS = HS410_TARGETS;
-	self.HS410_CUTTARGETS = HS410_CUTTARGETS;
-	self.HS50_INPUTS = HS50_INPUTS;
-	self.HS50_BUS = HS50_BUS;
-	self.HS50_TARGETS = HS50_TARGETS;
-	self.HS50_CUTTARGETS = HS50_CUTTARGETS;
+	self.HS410_INPUTS = HS410_INPUTS
+	self.HS410_BUS = HS410_BUS
+	self.HS410_TARGETS = HS410_TARGETS
+	self.HS410_CUTTARGETS = HS410_CUTTARGETS
+	self.HS50_INPUTS = HS50_INPUTS
+	self.HS50_BUS = HS50_BUS
+	self.HS50_TARGETS = HS50_TARGETS
+	self.HS50_CUTTARGETS = HS50_CUTTARGETS
+
+	self.data = {
+		tally: {
+			pgm: '',
+			pvw: '',
+			busA: '',
+			busB: '',
+			keyF: '',
+			keyS: '',
+			dskF: '',
+			dskS: '',
+			pinP1: '',
+			pinP2: '',
+			aux1: '',
+			aux2: '',
+			aux3: '',
+			aux4: '',
+		},
+	}
 
 	// super-constructor
-	instance_skel.apply(this, arguments);
+	instance_skel.apply(this, arguments)
 
-	self.actions(); // export actions
+	self.actions() // export actions
 
-	return self;
+	return self
 }
 
-instance.prototype.updateConfig = function(config) {
-	var self = this;
+// Init Module
+instance.prototype.init = function () {
+	var self = this
 
-	self.config = config;
-	self.init_tcp();
-	self.actions();
-};
+	debug = self.debug
+	log = self.log
 
-instance.prototype.init = function() {
-	var self = this;
+	self.status(self.STATE_UNKNOWN)
 
-	debug = self.debug;
-	log = self.log;
+	self.init_tcp()
+	self.setVariables()
+	self.checkVariables()
+}
 
-	self.status(self.STATE_UNKNOWN);
-
-	self.init_tcp();
-};
-
-instance.prototype.init_tcp = function() {
-	var self = this;
-	var receivebuffer = '';
+// When module gets deleted
+instance.prototype.destroy = function () {
+	var self = this
 
 	if (self.socket !== undefined) {
-		self.socket.destroy();
-		delete self.socket;
+		self.socket.destroy()
 	}
 
 	if (self.udp !== undefined) {
-		self.udp.destroy();
-		delete self.udp;
+		self.udp.destroy()
 	}
 
-	if (self.udptimer) {
-		clearInterval(self.udptimer);
-		delete self.udptimer;
+	if (self.multi !== undefined) {
+		self.multi.destroy()
 	}
 
-	if (self.config.host) {
-		self.socket = new tcp(self.config.host, 60040);
-		self.udp    = new udp(self.config.host, 60040);
+	debug('destroy', self.id)
+}
 
-		self.socket.on('status_change', function (status, message) {
-			self.status(status, message);
-		});
+// Update config
+instance.prototype.updateConfig = function (config) {
+	var self = this
 
-		self.socket.on('error', function (err) {
-			debug("Network error", err);
-			self.log('error',"Network error: " + err.message);
-		});
-
-		self.udp.on('error', function (err) {
-			debug("udp network error", err);
-		});
-
-		// Extract packet from STX/ETX from device
-		self.socket.on('data', function (chunk) {
-			var i = 0, packet = '', offset = 0;
-			receivebuffer += chunk;
-
-			while ( (i = receivebuffer.indexOf(ETX, offset)) !== -1) {
-				packet = receivebuffer.substr(offset, i - offset);
-				offset = i + 1;
-
-				if (packet.substr(0,1) == STX) {
-					self.socket.emit('receivepacket', packet.substr(1).toString());
-				}
-			}
-			receivebuffer = receivebuffer.substr(offset);
-		});
-
-		self.socket.on('receivepacket', function (data) {
-			// Ready for feedbacks
-		});
-
-		if (self.config.model == 'HS410') {
-			self.udptimer = setInterval(function () {
-				self.sendUDPCommand('SPAT:0:00');
-			}, 500);
-		}
-	}
-};
-
-instance.prototype.sendCommand = function(command) {
-	var self = this;
-
-	if (self.socket !== undefined && self.socket.connected) {
-		self.socket.send(STX + command + ETX);
-	} else {
-		debug('Socket not connected :(');
-	}
-};
-
-instance.prototype.sendUDPCommand = function(command) {
-	var self = this;
-
-	if (self.udp !== undefined) {
-		try {
-			self.udp.send(STX + command + ETX);
-		} catch (e) {
-			// ignore
-		}
-	}
-};
+	self.config = config
+	self.init_tcp()
+	self.actions()
+	self.setVariables()
+	self.checkVariables()
+}
 
 // Return config fields for web config
 instance.prototype.config_fields = function () {
-	var self = this;
+	var self = this
 
 	return [
 		{
@@ -288,140 +257,420 @@ instance.prototype.config_fields = function () {
 			id: 'info',
 			width: 12,
 			label: 'Information',
-			value: 'To control AV-HS410 you need to install the plug-in software for external interface control'
+			value: 'To control AV-HS410, you need to install the plug-in software for external interface control.',
 		},
 		{
 			type: 'textinput',
 			id: 'host',
 			label: 'Device IP',
 			width: 6,
-			regex: self.REGEX_IP
+			regex: self.REGEX_IP,
 		},
 		{
 			type: 'dropdown',
 			id: 'model',
 			label: 'Device Model',
-			choices: [ { id: 'HS410', label: 'AV-HS410' }, { id: 'HS50', label: 'AW-HS50' }],
+			choices: [
+				{ id: 'HS410', label: 'AV-HS410' },
+				{ id: 'HS50', label: 'AW-HS50' },
+			],
 			default: 'HS410',
-			width: 6
-		}
-	];
-};
+			width: 6,
+		},
+	]
+}
 
-// When module gets deleted
-instance.prototype.destroy = function() {
-	var self = this;
+// Setup TCP and UDP
+instance.prototype.init_tcp = function () {
+	var self = this
+	var receivebuffer = ''
 
 	if (self.socket !== undefined) {
-		self.socket.destroy();
+		self.socket.destroy()
+		delete self.socket
 	}
 
-	debug("destroy", self.id);
-};
+	if (self.udp !== undefined) {
+		self.udp.destroy()
+		delete self.udp
+	}
 
+	if (self.udptimer) {
+		clearInterval(self.udptimer)
+		delete self.udptimer
+	}
 
-instance.prototype.actions = function(system) {
-	var self = this;
-	var model = self.config.model;
+	if (self.config.host) {
+		if (self.config.model == 'HS410') {
+			self.socket = new tcp(self.config.host, 60020)
+			self.udp = new udp(self.config.host, 60020)
+		} else {
+			// if HS50 is selected
+			self.socket = new tcp(self.config.host, 60040)
+			self.udp = new udp(self.config.host, 60040)
+		}
+
+		self.socket.on('status_change', function (status, message) {
+			self.status(status, message)
+		})
+
+		self.socket.on('error', function (err) {
+			debug('Network error', err)
+			console.log('Network error' + err)
+			self.log('error', 'Network error: ' + err.message)
+		})
+
+		self.udp.on('error', function (err) {
+			debug('udp network error', err)
+			console.log('udp network error' + err)
+		})
+
+		// Extract packet from STX/ETX from device
+		self.socket.on('data', function (chunk) {
+			var i = 0,
+				packet = '',
+				offset = 0
+			receivebuffer += chunk
+
+			while ((i = receivebuffer.indexOf(ETX, offset)) !== -1) {
+				packet = receivebuffer.substr(offset, i - offset)
+				offset = i + 1
+
+				if (packet.substr(0, 1) == STX) {
+					self.socket.emit('receivepacket', packet.substr(1).toString())
+				}
+			}
+			receivebuffer = receivebuffer.substr(offset)
+		})
+
+		self.socket.on('receivepacket', function (data) {
+			// Ready for feedbacks
+		})
+
+		if (self.config.model == 'HS410') {
+			self.udptimer = setInterval(function () {
+				self.sendCommand('SPAT:0:00')
+			}, 500)
+
+			try {
+				self.listenMulticast()
+				self.log('info', 'Multicast Tally is enabled')
+				debug('Multicast Tally is enabled')
+			} catch (e) {
+				debug('Error listening for Multicast Tally', e)
+				console.log('Error listening for Multicast Tally', e)
+			}
+		}
+	}
+}
+
+// Setup Multicast for Tally
+instance.prototype.listenMulticast = function () {
+	var self = this
+	var receivebuffer = ''
+	let multicastAddress = '224.0.0.200'
+	let multicastPort = 60020
+
+	if (self.multi !== undefined) {
+		self.multi.destroy()
+		delete self.multi
+	}
+
+	self.multi = dgram.createSocket({ type: 'udp4', reuseAddr: true })
+
+	self.multi.on('listening', function () {
+		debug('Now listening for Multicast Tally')
+		console.log('Now listening for Multicast Tally')
+	})
+
+	self.multi.on('message', function (message, remote) {
+		var i = 0,
+			packet = '',
+			offset = 0
+		receivebuffer += message
+
+		while ((i = receivebuffer.indexOf(ETX, offset)) !== -1) {
+			packet = receivebuffer.substr(offset, i - offset)
+			offset = i + 1
+
+			if (packet.substr(0, 1) == STX) {
+				self.multi.emit('receivepacket', packet.substr(1).toString())
+			}
+		}
+		receivebuffer = receivebuffer.substr(offset)
+	})
+
+	self.multi.on('error', function (err) {
+		debug('multicast: on error: ' + err.stack)
+		console.log('multicast: on error: ' + err.stack)
+	})
+
+	self.multi.on('receivepacket', function (str_raw) {
+		// Ready for feedbacks on multicast data
+		str = str_raw.trim() // remove new line, carage return and so on.
+		str = str.split(':') // Split Commands and data
+
+		// Store Data
+		self.storeData(str)
+		self.checkVariables()
+	})
+
+	self.multi.bind(multicastPort, () => {
+		self.multi.addMembership(multicastAddress)
+	})
+}
+
+// Store recieved data
+instance.prototype.storeData = function (str) {
+	var self = this
+	var tally = self.data.tally
+
+	// Store Values from Events
+	switch (str[0]) {
+		case 'ABST':
+			switch (str[1]) {
+				case '00':
+					tally.busA = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // Bus A
+				case '01':
+					tally.busB = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // Bus B
+				case '02':
+					tally.pgm = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // PGM
+				case '03':
+					tally.pvw = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // PVW
+				case '04':
+					tally.keyF = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // Key Fill
+				case '05':
+					tally.keyS = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // Key Source
+				case '06':
+					tally.dskF = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // DSK Fill
+				case '07':
+					tally.dskS = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // DSK Source
+				case '10':
+					tally.pinP1 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // PinP 1
+				case '11':
+					tally.pinP2 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // PinP 2
+				case '12':
+					tally.aux1 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // AUX 1
+				case '13':
+					tally.aux2 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // AUX 2
+				case '14':
+					tally.aux3 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // AUX 3
+				case '15':
+					tally.aux4 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+					break // AUX 4
+				default:
+					break
+			}
+			break
+		case 'ATST':
+			break // Store some data when ATST command is recieved
+		case 'SPAT':
+			break // Store some data when SPAT command is recieved
+
+		default:
+			break
+	}
+}
+
+// Send a TCP command
+instance.prototype.sendCommand = function (command) {
+	var self = this
+
+	if (self.socket !== undefined && self.socket.connected) {
+		self.socket.send(STX + command + ETX)
+	} else {
+		debug('Socket not connected :(')
+	}
+}
+
+// Send a UDP command
+instance.prototype.sendUDPCommand = function (command) {
+	var self = this
+
+	if (self.udp !== undefined) {
+		try {
+			self.udp.send(STX + command + ETX)
+		} catch (e) {
+			// ignore
+		}
+	}
+}
+
+// ##########################
+// #### Create Variables ####
+// ##########################
+instance.prototype.setVariables = function () {
+	self = this
+	const variables = []
+
+	variables.push({ name: 'tally_pgm', label: 'Tally Program' })
+	variables.push({ name: 'tally_pvw', label: 'Tally Preview' })
+	variables.push({ name: 'bus_a', label: 'Bus A Selected' })
+	variables.push({ name: 'bus_b', label: 'Bus B Selected' })
+	variables.push({ name: 'key_fill', label: 'Key Fill Selected' })
+	variables.push({ name: 'key_source', label: 'Key Source Selected' })
+	variables.push({ name: 'dsk_fill', label: 'DSK Fill Selected' })
+	variables.push({ name: 'dsk_source', label: 'DSK Source Selected' })
+	variables.push({ name: 'pinp_1', label: 'PinP 1 Selected' })
+	variables.push({ name: 'pinp_2', label: 'PinP 2 Selected' })
+	variables.push({ name: 'aux_1', label: 'AUX 1 Selected' })
+	variables.push({ name: 'aux_2', label: 'AUX 2 Selected' })
+	variables.push({ name: 'aux_3', label: 'AUX 3 Selected' })
+	variables.push({ name: 'aux_4', label: 'AUX 4 Selected' })
+
+	this.setVariableDefinitions(variables)
+}
+
+// #########################
+// #### Check Variables ####
+// #########################
+instance.prototype.checkVariables = function () {
+	var self = this
+
+	if (self.config.model == 'HS410') {
+		// Only tested and supported on AV-HS410
+		self.setVariable('tally_pgm', self.data.tally.pgm)
+		self.setVariable('tally_pvw', self.data.tally.pvw)
+		self.setVariable('bus_a', self.data.tally.busA)
+		self.setVariable('bus_b', self.data.tally.busB)
+		self.setVariable('key_fill', self.data.tally.keyF)
+		self.setVariable('key_source', self.data.tally.keyS)
+		self.setVariable('dsk_fill', self.data.tally.dskF)
+		self.setVariable('dsk_source', self.data.tally.dskS)
+		self.setVariable('pinp_1', self.data.tally.pinP1)
+		self.setVariable('pinp_2', self.data.tally.pinP2)
+		self.setVariable('aux_1', self.data.tally.aux1)
+		self.setVariable('aux_2', self.data.tally.aux2)
+		self.setVariable('aux_3', self.data.tally.aux3)
+		self.setVariable('aux_4', self.data.tally.aux4)
+	}
+}
+
+// ########################
+// #### Create Actions ####
+// ########################
+instance.prototype.actions = function (system) {
+	var self = this
+	var model = self.config.model
 
 	self.system.emit('instance_actions', self.id, {
-		'xpt': {
+		xpt: {
 			label: 'Bus crosspoint control',
 			options: [
 				{
 					label: 'BUS',
 					type: 'dropdown',
 					id: 'bus',
-					choices: self[model + '_BUS']
+					choices: self[model + '_BUS'],
+					default: '00',
 				},
 				{
 					label: 'Input',
 					type: 'dropdown',
 					id: 'input',
-					choices: self[model + '_INPUTS']
-				}
-			]
+					choices: self[model + '_INPUTS'],
+					default: '00',
+				},
+			],
 		},
-		'auto': {
+		auto: {
 			label: 'Send AUTO transition',
 			options: [
 				{
 					label: 'Target',
 					type: 'dropdown',
 					id: 'target',
-					choices: self[model + '_TARGETS']
-				}
-			]
+					choices: self[model + '_TARGETS'],
+					default: '00',
+				},
+			],
 		},
-		'cut': {
+		cut: {
 			label: 'Send CUT transition',
 			options: [
 				{
 					label: 'Target',
 					type: 'dropdown',
 					id: 'target',
-					choices: self[model + '_CUTTARGETS']
-				}
-			]
+					choices: self[model + '_CUTTARGETS'],
+					default: '00',
+				},
+			],
 		},
-		'time': {
+		time: {
 			label: 'Auto transition time control (HS410)',
 			options: [
 				{
 					label: 'Target',
 					type: 'dropdown',
 					id: 'target',
-					choices: self[model + '_TARGETS']
+					choices: self[model + '_TARGETS'],
+					default: '00',
 				},
 				{
 					label: 'Time (in number of frames)',
 					type: 'textinput',
 					id: 'frames',
-					regex: '/^0*([0-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9])$/'
-				}
-			]
-		}
-	});
+					regex: '/^0*([0-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9])$/',
+				},
+			],
+		},
+	})
 }
 
-instance.prototype.action = function(action) {
-	var self = this;
-	var cmd;
-	var opt = action.options;
+// #######################
+// #### Check Actions ####
+// #######################
+instance.prototype.action = function (action) {
+	var self = this
+	var cmd
+	var opt = action.options
 
 	switch (action.action) {
-
 		case 'xpt':
-			self.sendCommand('SBUS:' + opt.bus + ':' + opt.input);
-			break;
+			self.sendCommand('SBUS:' + opt.bus + ':' + opt.input)
+			break
 
 		case 'auto':
 			if (self.config.model == 'HS50') {
-				self.sendCommand('SAUT:' + opt.target + ':0');
+				self.sendCommand('SAUT:' + opt.target + ':0')
 			} else {
-				self.sendCommand('SAUT:' + opt.target + ':0:0');
+				self.sendCommand('SAUT:' + opt.target + ':0:0')
 			}
-			break;
+			break
 
 		case 'cut':
-			self.sendCommand('SCUT:' + opt.target);
-			break;
+			self.sendCommand('SCUT:' + opt.target)
+			break
 
 		case 'time':
 			if (self.config.model == 'HS50') {
-				self.log('error', 'HS50 does not have support for setting auto transition times');
-				break;
+				self.log('error', 'HS50 does not have support for setting auto transition times')
+				break
 			}
 
 			if (parseInt(opt.frames) > 999) {
-				opt.frames = 999;
+				opt.frames = 999
 			}
-			self.sendCommand('STIM:' + opt.target + ':' + ('000' + parseInt(opt.frames)).substr(-3));
-			break;
+			self.sendCommand('STIM:' + opt.target + ':' + ('000' + parseInt(opt.frames)).substr(-3))
+			break
 	}
 
-	debug('action():', action.action);
-};
+	debug('action():', action.action)
+}
 
-instance_skel.extendedBy(instance);
-exports = module.exports = instance;
+instance_skel.extendedBy(instance)
+exports = module.exports = instance

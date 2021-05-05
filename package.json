@@ -6,9 +6,9 @@
 		"Vision Mixer"
 	],
 	"manufacturer": "Panasonic",
-	"product": "AV-HS50 / AV-HS410",
+	"product": "AV-HS50 / AV-HS410 / AV-UHS500",
 	"shortname": "av-hs",
-	"description": "Companion module for Panasonic AV-HS50 and AV-HS410",
+	"description": "Companion module for Panasonic AV-HS50, AV-HS410 and AV-UHS500",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"

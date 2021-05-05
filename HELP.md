@@ -13,8 +13,8 @@ Plugins for the AV-HS410 mixer can be found by creating a login and downloading 
 ### Available actions
 
 - Bus crosspoint control
-- Send AUTO transition (HS50 and HS410 only)
-- Send CUT transition (HS50 and HS410 only)
-- Auto transition time control (HS410 only)
+- Send AUTO transition
+- Send CUT transition
+- Auto transition time control (Not supported by AV-HS50)
 
 For additional actions, please raise a feature request on [GitHub](https://github.com/bitfocus/companion-module-panasonic-avhs/).

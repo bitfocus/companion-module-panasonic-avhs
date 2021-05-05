@@ -30,17 +30,18 @@ var UHS500_BUS = [
 	{ id: '98', label: 'DSK1-S' },
 	{ id: '99', label: 'DSK2-F' },
 	{ id: '100', label: 'DSK2-S' },
-	{ id: '113', label: 'AUX1' },
-        { id: '114', label: 'AUX2' },
-        { id: '115', label: 'AUX3' },
-        { id: '116', label: 'AUX4' },
-        { id: '150', label: 'VMEM-V' },
-        { id: '151', label: 'VMEM-K' },
-        { id: '153', label: 'MV1-1' },
-        { id: '168', label: 'MV1-16' },
-        { id: '169', label: 'MV2-1' },
-        { id: '184', label: 'MV2-16' }
-];
+	{ id: '113', label: 'AUX 1' },
+	{ id: '114', label: 'AUX 2' },
+	{ id: '115', label: 'AUX 3' },
+	{ id: '116', label: 'AUX 4' },
+	{ id: '141', label: 'DISP' },
+	{ id: '150', label: 'VMEM-V' },
+	{ id: '151', label: 'VMEM-K' },
+	{ id: '153', label: 'MV1-1' },
+	{ id: '168', label: 'MV1-16' },
+	{ id: '169', label: 'MV2-1' },
+	{ id: '184', label: 'MV2-16' },
+]
 
 var HS410_BUS = [
 	{ id: '00', label: 'Bus A' },
@@ -79,8 +80,16 @@ var UHS500_INPUTS = [
 	{ id: '06', label: 'SDI IN6' },
 	{ id: '07', label: 'SDI IN7' },
 	{ id: '08', label: 'SDI IN8' },
-	{ id: '145', label: 'CBGD1' },
-	{ id: '146', label: 'CBGD2' },
+	{ id: '09', label: 'OPA IN1' },
+	{ id: '10', label: 'OPA IN2' },
+	{ id: '11', label: 'OPA IN3' },
+	{ id: '12', label: 'OPA IN4' },
+	{ id: '13', label: 'OPB IN1' },
+	{ id: '14', label: 'OPB IN2' },
+	{ id: '15', label: 'OPB IN3' },
+	{ id: '16', label: 'OPB IN4' },
+	{ id: '145', label: 'CBGD 1' },
+	{ id: '146', label: 'CBGD 2' },
 	{ id: '147', label: 'CBAR' },
 	{ id: '148', label: 'BLACK' },
 	{ id: '149', label: 'STILL1-V' },
@@ -91,28 +100,19 @@ var UHS500_INPUTS = [
 	{ id: '158', label: 'CLIP1-K' },
 	{ id: '159', label: 'CLIP2-V' },
 	{ id: '160', label: 'CLIP2-K' },
-	{ id: '165', label: 'MV1' },
-	{ id: '166', label: 'MV2' },
+	{ id: '165', label: 'MV 1' },
+	{ id: '166', label: 'MV 2' },
 	{ id: '171', label: 'KEY OUT' },
 	{ id: '172', label: 'CLN' },
 	{ id: '201', label: 'PGM' },
 	{ id: '203', label: 'PVW' },
 	{ id: '209', label: 'ME PGM' },
-	{ id: '227', label: 'AUX1' },
-	{ id: '228', label: 'AUX2' },
-	{ id: '229', label: 'AUX3' },
-	{ id: '230', label: 'AUX4' },
+	{ id: '227', label: 'AUX 1' },
+	{ id: '228', label: 'AUX 2' },
+	{ id: '229', label: 'AUX 3' },
+	{ id: '230', label: 'AUX 4' },
 	{ id: '251', label: 'CLOCK' },
-	{ id: '255', label: 'OPA IN1' },
-	{ id: '256', label: 'OPA IN2' },
-	{ id: '257', label: 'OPA IN3' },
-	{ id: '258', label: 'OPA IN4' },
-	{ id: '259', label: 'OPB IN1' },
-	{ id: '260', label: 'OPB IN2' },
-	{ id: '261', label: 'OPB IN3' },
-	{ id: '262', label: 'OPB IN4' }
-];
-
+]
 
 var HS410_INPUTS = [
 	{ id: '00', label: 'XPT 1' },
@@ -201,6 +201,16 @@ var HS50_INPUTS = [
 	{ id: '81', label: 'Multi view' },
 ]
 
+var UHS500_TARGETS = [
+	{ id: '00', label: 'BKGD' },
+	{ id: '01', label: 'KEY 1' },
+	{ id: '04', label: 'KEY 2' },
+	{ id: '05', label: 'KEY 3' },
+	{ id: '06', label: 'FTB' },
+	{ id: '07', label: 'DSK 1' },
+	{ id: '08', label: 'DSK 2' },
+]
+
 var HS410_TARGETS = [
 	{ id: '00', label: 'BKGD' },
 	{ id: '01', label: 'KEY' },
@@ -217,11 +227,21 @@ var HS50_TARGETS = [
 	{ id: '06', label: 'FTB' },
 ]
 
+var UHS500_CUTTARGETS = [
+	{ id: '00', label: 'BKGD' },
+	{ id: '01', label: 'KEY 1' },
+	{ id: '04', label: 'KEY 2' },
+	{ id: '05', label: 'KEY 3' },
+	{ id: '06', label: 'FTB' },
+	{ id: '07', label: 'DSK 1' },
+	{ id: '08', label: 'DSK 2' },
+]
+
 var HS410_CUTTARGETS = [
 	{ id: '00', label: 'BKGD' },
 	{ id: '01', label: 'KEY' },
-	{ id: '04', label: 'PinP1' },
-	{ id: '05', label: 'PinP2' },
+	{ id: '04', label: 'PinP 1' },
+	{ id: '05', label: 'PinP 2' },
 	{ id: '06', label: 'FTB' },
 	{ id: '07', label: 'DSK' },
 ]
@@ -237,10 +257,10 @@ function instance(system, id, config) {
 	var self = this
 
 	// Because we use dynamic variables ex: self[model + '_INPUTS']
-  self.UHS500_INPUTS = UHS500_INPUTS;
-	self.UHS500_BUS = UHS500_BUS;
-	self.UHS500_TARGETS = UHS500_TARGETS;
-	self.UHS500_CUTTARGETS = UHS500_CUTTARGETS;
+	self.UHS500_INPUTS = UHS500_INPUTS
+	self.UHS500_BUS = UHS500_BUS
+	self.UHS500_TARGETS = UHS500_TARGETS
+	self.UHS500_CUTTARGETS = UHS500_CUTTARGETS
 	self.HS410_INPUTS = HS410_INPUTS
 	self.HS410_BUS = HS410_BUS
 	self.HS410_TARGETS = HS410_TARGETS
@@ -331,9 +351,9 @@ instance.prototype.config_fields = function () {
 			id: 'info',
 			width: 12,
 			label: 'Information',
-			value: 
-        'To control AV-HS410, you need to install the plug-in software for external interface control. <br/>' + 
-        'Default ports used in this module are 62000 for AV-UHS500, 60020 for AV-HS410 and 60040 for AV-HS50.',
+			value:
+				'To control AV-HS410, you need to install the plug-in software for external interface control. <br/>' +
+				'Default ports used in this module are 62000 for AV-UHS500, 60020 for AV-HS410 and 60040 for AV-HS50.',
 		},
 		{
 			type: 'textinput',
@@ -347,7 +367,7 @@ instance.prototype.config_fields = function () {
 			id: 'model',
 			label: 'Device Model',
 			choices: [
-        { id: 'UHS500', label: 'AV-UHS500' },
+				{ id: 'UHS500', label: 'AV-UHS500' },
 				{ id: 'HS410', label: 'AV-HS410' },
 				{ id: 'HS50', label: 'AW-HS50' },
 			],
@@ -381,10 +401,10 @@ instance.prototype.init_tcp = function () {
 		if (self.config.model == 'HS410') {
 			self.socket = new tcp(self.config.host, 60020)
 			self.udp = new udp(self.config.host, 60020)
-    } else if (self.config.model == 'UHS500') {
-      self.socket = new tcp(self.config.host, 62000);
-		  self.udp = new udp(self.config.host, 62000);
-    } else {
+		} else if (self.config.model == 'UHS500') {
+			self.socket = new tcp(self.config.host, 62000)
+			self.udp = new udp(self.config.host, 62000)
+		} else {
 			// if HS50 is selected
 			self.socket = new tcp(self.config.host, 60040)
 			self.udp = new udp(self.config.host, 60040)

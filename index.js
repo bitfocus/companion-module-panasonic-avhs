@@ -270,6 +270,7 @@ function instance(system, id, config) {
 	self.HS50_TARGETS = HS50_TARGETS
 	self.HS50_CUTTARGETS = HS50_CUTTARGETS
 
+	self.interfaces = [] // Store all network interface ip's
 	self.data = {
 		tally: {
 			pgm: '',
@@ -304,8 +305,9 @@ instance.prototype.init = function () {
 	debug = self.debug
 	log = self.log
 
-	self.status(self.STATE_UNKNOWN)
+	self.status(self.STATE_WARNING, 'Connecting')
 
+	self.getNetworkInterfaces()
 	self.init_tcp()
 	self.setVariables()
 	self.checkVariables()
@@ -314,6 +316,11 @@ instance.prototype.init = function () {
 // When module gets deleted
 instance.prototype.destroy = function () {
 	var self = this
+
+	if (self.udptimer) {
+		clearInterval(self.udptimer)
+		delete self.udptimer
+	}
 
 	if (self.socket !== undefined) {
 		self.socket.destroy()
@@ -324,7 +331,7 @@ instance.prototype.destroy = function () {
 	}
 
 	if (self.multi !== undefined) {
-		self.multi.destroy()
+		// self.multi.disconnect()
 	}
 
 	debug('destroy', self.id)
@@ -335,6 +342,8 @@ instance.prototype.updateConfig = function (config) {
 	var self = this
 
 	self.config = config
+	self.status(self.STATE_WARNING, 'Connecting')
+	self.getNetworkInterfaces()
 	self.init_tcp()
 	self.actions()
 	self.setVariables()
@@ -373,6 +382,15 @@ instance.prototype.config_fields = function () {
 			],
 			default: 'HS410',
 			width: 6,
+		},
+		{
+			type: 'text',
+			id: 'info2',
+			width: 12,
+			label: 'Variables and AV-HS410 Support',
+			value:
+				'Make sure you have <b>Multicast enabled</b> on your network. If multicast is disabled, then variables will not work with the <b>AV-HS410</b>.  <br/>' +
+				'(also, variables are only supported on the AV-HS410)',
 		},
 	]
 }
@@ -475,10 +493,11 @@ instance.prototype.listenMulticast = function () {
 	var self = this
 	var receivebuffer = ''
 	let multicastAddress = '224.0.0.200'
+	let multicastInterface = self.interfaces
 	let multicastPort = 60020
 
 	if (self.multi !== undefined) {
-		self.multi.destroy()
+		self.multi.destroy() // Somehow this is needed even though it's not defined, if you remove it, then Companion will crash when updating the instance, but if you leave it it works and you will only get an error thrown, LOL 🤷
 		delete self.multi
 	}
 
@@ -522,7 +541,9 @@ instance.prototype.listenMulticast = function () {
 	})
 
 	self.multi.bind(multicastPort, () => {
-		self.multi.addMembership(multicastAddress)
+		for (let i = 0; i < multicastInterface.length; i++) {
+			self.multi.addMembership(multicastAddress, multicastInterface[i])
+		}
 	})
 }
 
@@ -591,6 +612,19 @@ instance.prototype.storeData = function (str) {
 	}
 }
 
+// Get All Network Interfaces
+instance.prototype.getNetworkInterfaces = function () {
+	var self = this
+
+	var temp
+	this.system.emit('variable_get', 'internal', 'all_ip', (definitions) => (temp = definitions))
+	var str = temp.split('\\n') // Split interfaces up
+
+	for (let i = 0; i < str.length - 1; i++) {
+		self.interfaces.push(str[i])
+	}
+}
+
 // Send a TCP command
 instance.prototype.sendCommand = function (command) {
 	var self = this
@@ -599,6 +633,7 @@ instance.prototype.sendCommand = function (command) {
 		self.socket.send(STX + command + ETX)
 	} else {
 		debug('Socket not connected :(')
+		self.status(2, 'Error')
 	}
 }
 

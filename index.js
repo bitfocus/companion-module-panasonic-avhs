@@ -501,50 +501,81 @@ instance.prototype.listenMulticast = function () {
 		delete self.multi
 	}
 
-	self.multi = dgram.createSocket({ type: 'udp4', reuseAddr: true })
+	return new Promise(function(resolve, reject) {
+		self.multi = dgram.createSocket({ type: 'udp4', reuseAddr: true })
 
-	self.multi.on('listening', function () {
-		debug('Now listening for Multicast Tally')
-		console.log('Now listening for Multicast Tally')
-	})
+		self.multi.on('listening', function () {
+			debug('Now listening for Multicast Tally')
+			console.log('Now listening for Multicast Tally')
+		})
 
-	self.multi.on('message', function (message, remote) {
-		var i = 0,
-			packet = '',
-			offset = 0
-		receivebuffer += message
+		self.multi.on('message', function (message, remote) {
+			var i = 0,
+				packet = '',
+				offset = 0
+			receivebuffer += message
 
-		while ((i = receivebuffer.indexOf(ETX, offset)) !== -1) {
-			packet = receivebuffer.substr(offset, i - offset)
-			offset = i + 1
+			while ((i = receivebuffer.indexOf(ETX, offset)) !== -1) {
+				packet = receivebuffer.substr(offset, i - offset)
+				offset = i + 1
 
-			if (packet.substr(0, 1) == STX) {
-				self.multi.emit('receivepacket', packet.substr(1).toString())
+				if (packet.substr(0, 1) == STX) {
+					self.multi.emit('receivepacket', packet.substr(1).toString())
+				}
 			}
-		}
-		receivebuffer = receivebuffer.substr(offset)
-	})
+			receivebuffer = receivebuffer.substr(offset)
+		})
 
-	self.multi.on('error', function (err) {
-		debug('multicast: on error: ' + err.stack)
-		console.log('multicast: on error: ' + err.stack)
-	})
+		self.multi.on('error', function (err) {
+			debug('multicast: on error: ' + err.stack)
+			console.log('multicast: on error: ' + err.stack)
+		})
 
-	self.multi.on('receivepacket', function (str_raw) {
-		// Ready for feedbacks on multicast data
-		str = str_raw.trim() // remove new line, carage return and so on.
-		str = str.split(':') // Split Commands and data
+		self.multi.on('receivepacket', function (str_raw) {
+			// Ready for feedbacks on multicast data
+			str = str_raw.trim() // remove new line, carage return and so on.
+			str = str.split(':') // Split Commands and data
 
-		// Store Data
-		self.storeData(str)
-		self.checkVariables()
-	})
+			// Store Data
+			self.storeData(str)
+			self.checkVariables()
+		})
 
-	self.multi.bind(multicastPort, () => {
-		for (let i = 0; i < multicastInterface.length; i++) {
-			self.multi.addMembership(multicastAddress, multicastInterface[i])
-		}
-	})
+		self.multi.bind(multicastPort, () => {
+			for (let i = 0; i < multicastInterface.length; i++) {
+				self.multi.addMembership(multicastAddress, multicastInterface[i])
+			}
+		})
+
+		// Catch "EINVAL" error that orcures if the multicast port is already in use
+		process.on('uncaughtException', function(err) {
+			if(err.errno === 'EINVAL') {
+				console.log("Multicast error: " + err);
+				debug("Multicast error: " + err)
+				// self.log('error', "TCP error: " + String(err));
+				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time");
+			}
+			else if(err.errno === 'EADDRINUSE') {
+				console.log("Multicast error: " + err);
+				debug("Multicast error: " + err)
+				// self.log('error', "TCP error: " + String(err));
+				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time");
+			}
+			else if(err.errno === ' ECONNREFUSED') {
+				console.log("Multicast error: " + err);
+				debug("Multicast error: " + err)
+				// self.log('error', "TCP error: " + String(err));
+				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time");
+			}
+			else {
+				console.log(err);
+				process.exit(1);
+			}
+			reject(err);
+		});
+		resolve();
+    });
+
 }
 
 // Store recieved data

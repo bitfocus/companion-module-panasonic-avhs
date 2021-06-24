@@ -44,10 +44,10 @@ var UHS500_BUS = [
 ]
 
 var HS410_BUS = [
-	{ id: '00', label: 'Bus A' },
-	{ id: '01', label: 'Bus B' },
 	{ id: '02', label: 'PGM' },
 	{ id: '03', label: 'PVW' },
+	{ id: '00', label: 'Bus A' },
+	{ id: '01', label: 'Bus B' },
 	{ id: '04', label: 'Key Fill' },
 	{ id: '05', label: 'Key Source' },
 	{ id: '06', label: 'DSK Fill' },
@@ -61,10 +61,10 @@ var HS410_BUS = [
 ]
 
 var HS50_BUS = [
-	{ id: '00', label: 'Bus A' },
-	{ id: '01', label: 'Bus B' },
 	{ id: '02', label: 'PGM' },
 	{ id: '03', label: 'PVW' },
+	{ id: '00', label: 'Bus A' },
+	{ id: '01', label: 'Bus B' },
 	{ id: '04', label: 'Key Fill' },
 	{ id: '05', label: 'Key Source' },
 	{ id: '10', label: 'PinP' },
@@ -309,8 +309,10 @@ instance.prototype.init = function () {
 
 	self.getNetworkInterfaces()
 	self.init_tcp()
+	self.init_feedbacks()
 	self.setVariables()
 	self.checkVariables()
+	self.checkFeedbacks()
 }
 
 // When module gets deleted
@@ -346,8 +348,10 @@ instance.prototype.updateConfig = function (config) {
 	self.getNetworkInterfaces()
 	self.init_tcp()
 	self.actions()
+	self.init_feedbacks()
 	self.setVariables()
 	self.checkVariables()
+	self.checkFeedbacks()
 }
 
 // Return config fields for web config
@@ -539,6 +543,7 @@ instance.prototype.listenMulticast = function () {
 			// Store Data
 			self.storeData(str)
 			self.checkVariables()
+			self.checkFeedbacks()
 		})
 
 		self.multi.bind(multicastPort, () => {
@@ -731,6 +736,110 @@ instance.prototype.checkVariables = function () {
 	}
 }
 
+// ##########################
+// #### Create Feedbacks ####
+// ##########################
+instance.prototype.setFeedbacks = function () {
+	var self = this
+	var feedbacks = {}
+	var model = self.config.model
+	var inputs = self[model + '_INPUTS'].slice(0, 24); // Only get the valid range of inputs for tally feedbacks
+
+	const foregroundColor = self.rgb(255, 255, 255) // White
+	const backgroundColor = self.rgb(255, 0, 0) // Red
+
+	// Only avaliable for HS410
+	if (self.config.model == 'HS410') {
+		feedbacks.tally = {
+			type: 'boolean',
+			label: 'Tally Feedback',
+			description: 'Indicate if Camera is selected on a bus',
+			style: {
+				color: foregroundColor,
+				bgcolor: backgroundColor,
+			},
+			options: [
+				{
+					label: 'BUS',
+					type: 'dropdown',
+					id: 'bus',
+					choices: self[model + '_BUS'],
+					default: self[model + '_BUS'][0].id,
+				},
+				{
+					label: 'Input',
+					type: 'dropdown',
+					id: 'input',
+					choices: inputs,
+					default: inputs[0].id,
+				},
+			],
+			callback: function (feedback, bank) {
+				var opt = feedback.options
+				var tally = self.data.tally
+
+				// Only avaliable with HS410
+				switch (opt.bus.id) {
+					case '00':
+						if (opt.input.label == tally.busA) { return true}
+						break // Bus A
+					case '01':
+						if (opt.input.label == tally.busB) { return true}
+						break // Bus B
+					case '02':
+						if (opt.input.label == tally.pgm) { return true}
+						break // PGM
+					case '03':
+						if (opt.input.label == tally.pvw) { return true}
+						break // PVW
+					case '04':
+						if (opt.input.label == tally.keyF) { return true}
+						break // Key Fill
+					case '05':
+						if (opt.input.label == tally.keyS) { return true}
+						break // Key Source
+					case '06':
+						if (opt.input.label == tally.dskF) { return true}
+						break // DSK Fill
+					case '07':
+						if (opt.input.label == tally.dskS) { return true}
+						break // DSK Source
+					case '10':
+						if (opt.input.label == tally.pinP1) { return true}
+						break // PinP 1
+					case '11':
+						if (opt.input.label == tally.pinP2) { return true}
+						break // PinP 2
+					case '12':
+						if (opt.input.label == tally.aux1) { return true}
+						break // AUX 1
+					case '13':
+						if (opt.input.label == tally.aux2) { return true}
+						break // AUX 2
+					case '14':
+						if (opt.input.label == tally.aux3) { return true}
+						break // AUX 3
+					case '15':
+						if (opt.input.label == tally.aux4) { return true}
+						break // AUX 4
+					default:
+						return false
+				}
+				return false
+			},
+		}
+	}
+	return feedbacks
+}
+
+// #########################
+// #### Check Feedbacks ####
+// #########################
+instance.prototype.init_feedbacks = function (system) {
+	var self = this
+	self.setFeedbackDefinitions(self.setFeedbacks())
+}
+
 // ########################
 // #### Create Actions ####
 // ########################
@@ -747,14 +856,14 @@ instance.prototype.actions = function (system) {
 					type: 'dropdown',
 					id: 'bus',
 					choices: self[model + '_BUS'],
-					default: '00',
+					default: self[model + '_BUS'][0].i,
 				},
 				{
 					label: 'Input',
 					type: 'dropdown',
 					id: 'input',
 					choices: self[model + '_INPUTS'],
-					default: '00',
+					default: self[model + '_INPUTS'][0].id,
 				},
 			],
 		},
@@ -766,7 +875,7 @@ instance.prototype.actions = function (system) {
 					type: 'dropdown',
 					id: 'target',
 					choices: self[model + '_TARGETS'],
-					default: '00',
+					default: self[model + '_TARGETS'][0].id,
 				},
 			],
 		},
@@ -778,7 +887,7 @@ instance.prototype.actions = function (system) {
 					type: 'dropdown',
 					id: 'target',
 					choices: self[model + '_CUTTARGETS'],
-					default: '00',
+					default: self[model + '_CUTTARGETS'][0].id,
 				},
 			],
 		},
@@ -790,7 +899,7 @@ instance.prototype.actions = function (system) {
 					type: 'dropdown',
 					id: 'target',
 					choices: self[model + '_TARGETS'],
-					default: '00',
+					default: self[model + '_TARGETS'][0].id,
 				},
 				{
 					label: 'Time (in number of frames)',

@@ -19,3 +19,4 @@ See HELP.md and LICENSE
 **V1.0.4**
 
 - Added Tally feedback for AV-HS410
+- Changed error handling on Multicast

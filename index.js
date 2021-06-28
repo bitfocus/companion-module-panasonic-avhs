@@ -505,7 +505,7 @@ instance.prototype.listenMulticast = function () {
 		delete self.multi
 	}
 
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		self.multi = dgram.createSocket({ type: 'udp4', reuseAddr: true })
 
 		self.multi.on('listening', function () {
@@ -553,34 +553,30 @@ instance.prototype.listenMulticast = function () {
 		})
 
 		// Catch "EINVAL" error that orcures if the multicast port is already in use
-		process.on('uncaughtException', function(err) {
-			if(err.errno === 'EINVAL') {
-				console.log("Multicast error: " + err);
-				debug("Multicast error: " + err)
+		process.on('uncaughtException', function (err) {
+			if (err.errno === 'EINVAL') {
+				console.log('Multicast error: ' + err)
+				debug('Multicast error: ' + err)
 				// self.log('error', "TCP error: " + String(err));
-				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time");
-			}
-			else if(err.errno === 'EADDRINUSE') {
-				console.log("Multicast error: " + err);
-				debug("Multicast error: " + err)
+				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time")
+			} else if (err.errno === 'EADDRINUSE') {
+				console.log('Multicast error: ' + err)
+				debug('Multicast error: ' + err)
 				// self.log('error', "TCP error: " + String(err));
-				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time");
-			}
-			else if(err.errno === ' ECONNREFUSED') {
-				console.log("Multicast error: " + err);
-				debug("Multicast error: " + err)
+				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time")
+			} else if (err.errno === ' ECONNREFUSED') {
+				console.log('Multicast error: ' + err)
+				debug('Multicast error: ' + err)
 				// self.log('error', "TCP error: " + String(err));
-				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time");
+				self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time")
+			} else {
+				console.log(err)
+				process.exit(1)
 			}
-			else {
-				console.log(err);
-				process.exit(1);
-			}
-			reject(err);
-		});
-		resolve();
-    });
-
+			reject(err)
+		})
+		resolve()
+	})
 }
 
 // Store recieved data
@@ -743,7 +739,7 @@ instance.prototype.setFeedbacks = function () {
 	var self = this
 	var feedbacks = {}
 	var model = self.config.model
-	var inputs = self[model + '_INPUTS'].slice(0, 24); // Only get the valid range of inputs for tally feedbacks
+	var inputs = self[model + '_INPUTS'].slice(0, 24) // Only get the valid range of inputs for tally feedbacks
 
 	const foregroundColor = self.rgb(255, 255, 255) // White
 	const backgroundColor = self.rgb(255, 0, 0) // Red
@@ -781,46 +777,74 @@ instance.prototype.setFeedbacks = function () {
 				// Only avaliable with HS410
 				switch (opt.bus.id) {
 					case '00':
-						if (opt.input.label == tally.busA) { return true}
+						if (opt.input.label == tally.busA) {
+							return true
+						}
 						break // Bus A
 					case '01':
-						if (opt.input.label == tally.busB) { return true}
+						if (opt.input.label == tally.busB) {
+							return true
+						}
 						break // Bus B
 					case '02':
-						if (opt.input.label == tally.pgm) { return true}
+						if (opt.input.label == tally.pgm) {
+							return true
+						}
 						break // PGM
 					case '03':
-						if (opt.input.label == tally.pvw) { return true}
+						if (opt.input.label == tally.pvw) {
+							return true
+						}
 						break // PVW
 					case '04':
-						if (opt.input.label == tally.keyF) { return true}
+						if (opt.input.label == tally.keyF) {
+							return true
+						}
 						break // Key Fill
 					case '05':
-						if (opt.input.label == tally.keyS) { return true}
+						if (opt.input.label == tally.keyS) {
+							return true
+						}
 						break // Key Source
 					case '06':
-						if (opt.input.label == tally.dskF) { return true}
+						if (opt.input.label == tally.dskF) {
+							return true
+						}
 						break // DSK Fill
 					case '07':
-						if (opt.input.label == tally.dskS) { return true}
+						if (opt.input.label == tally.dskS) {
+							return true
+						}
 						break // DSK Source
 					case '10':
-						if (opt.input.label == tally.pinP1) { return true}
+						if (opt.input.label == tally.pinP1) {
+							return true
+						}
 						break // PinP 1
 					case '11':
-						if (opt.input.label == tally.pinP2) { return true}
+						if (opt.input.label == tally.pinP2) {
+							return true
+						}
 						break // PinP 2
 					case '12':
-						if (opt.input.label == tally.aux1) { return true}
+						if (opt.input.label == tally.aux1) {
+							return true
+						}
 						break // AUX 1
 					case '13':
-						if (opt.input.label == tally.aux2) { return true}
+						if (opt.input.label == tally.aux2) {
+							return true
+						}
 						break // AUX 2
 					case '14':
-						if (opt.input.label == tally.aux3) { return true}
+						if (opt.input.label == tally.aux3) {
+							return true
+						}
 						break // AUX 3
 					case '15':
-						if (opt.input.label == tally.aux4) { return true}
+						if (opt.input.label == tally.aux4) {
+							return true
+						}
 						break // AUX 4
 					default:
 						return false

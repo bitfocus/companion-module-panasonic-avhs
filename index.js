@@ -304,16 +304,19 @@ instance.prototype.init = function () {
 
 	self.config.host = this.config.host || ''
 	self.config.model = this.config.model || 'HS410'
+	self.config.multicast = this.config.multicast
 
 	self.status(self.STATE_WARNING, 'Connecting')
 
 	self.getNetworkInterfaces()
 	self.init_tcp()
 	self.actions()
-	self.init_feedbacks()
-	self.setVariables()
-	self.checkVariables()
-	self.checkFeedbacks()
+	if (self.config.multicast == true) {
+		self.init_feedbacks()
+		self.setVariables()
+		self.checkVariables()
+		self.checkFeedbacks()
+	}
 	return self
 }
 
@@ -350,10 +353,12 @@ instance.prototype.updateConfig = function (config) {
 	self.getNetworkInterfaces()
 	self.init_tcp()
 	self.actions()
-	self.init_feedbacks()
-	self.setVariables()
-	self.checkVariables()
-	self.checkFeedbacks()
+	if (self.config.multicast == true) {
+		self.init_feedbacks()
+		self.setVariables()
+		self.checkVariables()
+		self.checkFeedbacks()	
+	}
 	return self
 }
 
@@ -369,7 +374,7 @@ instance.prototype.config_fields = function () {
 			label: 'Information',
 			value:
 				'To control AV-HS410, you now need to install two plug-ins <b>AUXP_IP and HS410_IF</b>, not just HS410_IF<br/>' +
-				'Default ports used in this module are 62000 for AV-UHS500, 60020 for AV-HS410 and 60040 for AV-HS50.',
+				'Default ports used in this module are 62000 for AV-UHS500, 60040 (60020 for multicast)  for AV-HS410 and 60040 for AV-HS50.',
 		},
 		{
 			type: 'textinput',
@@ -400,6 +405,21 @@ instance.prototype.config_fields = function () {
 				'Make sure you have <b>Multicast enabled</b> on your network. If multicast is disabled, then variables will not work with the <b>AV-HS410</b>.  <br/>' +
 				'(variables are only supported on the AV-HS410)',
 		},
+		{
+			type: 'checkbox',
+			id: 'multicast',
+			width: 1,
+			label: 'Enable',
+			default: false,
+		},
+		{
+			type: 'text',
+			id: 'multicastInfo',
+			width: 11,
+			label: 'Enable Multicast Support (Tally Info)',
+			value:
+				'IF you are using a AV-HS410, Enable this for multicast tally supoport, giving you variables and feedbacks for tally',
+		},
 	]
 }
 
@@ -425,8 +445,13 @@ instance.prototype.init_tcp = function () {
 
 	if (self.config.host) {
 		if (self.config.model == 'HS410') {
-			self.socket = new tcp(self.config.host, 60020)
-			self.udp = new udp(self.config.host, 60020)
+			if (self.config.multicast == true) {
+				self.socket = new tcp(self.config.host, 60020)
+				self.udp = new udp(self.config.host, 60020)
+			} else {
+				self.socket = new tcp(self.config.host, 60040)
+				self.udp = new udp(self.config.host, 60040)
+			}
 		} else if (self.config.model == 'UHS500') {
 			self.socket = new tcp(self.config.host, 62000)
 			self.udp = new udp(self.config.host, 62000)
@@ -484,13 +509,21 @@ instance.prototype.init_tcp = function () {
 				self.sendCommand('SPAT:0:00')
 			}, 500) // 500 ms keepalive command
 
-			try {
-				self.listenMulticast()
-				self.log('info', 'Multicast Tally is enabled')
-				debug('Multicast Tally is enabled')
-			} catch (e) {
-				debug('Error listening for Multicast Tally', e)
-				console.log('Error listening for Multicast Tally', e)
+			console.log(self.config.multicast)
+			if (self.config.multicast == true) { // only when multicast is enabled in the config
+				try {
+					self.listenMulticast()
+					self.log('info', 'Multicast Tally is enabled')
+					debug('Multicast Tally is enabled')
+				} catch (e) {
+					debug('Error listening for Multicast Tally', e)
+					console.log('Error listening for Multicast Tally', e)
+				}
+			} else { // If not, delete old multicast sockets
+				if (self.multi !== undefined) {
+					self.multi.destroy() // Somehow this is needed even though it's not defined, if you remove it, then Companion will crash when updating the instance, but if you leave it it works and you will only get an error thrown, LOL 🤷
+					delete self.multi
+				}			
 			}
 		}
 	}
@@ -570,7 +603,6 @@ instance.prototype.listenMulticast = function () {
 
 		self.multi.bind(multicastPort, () => {
 			for (let i = 0; i < multicastInterface.length; i++) {
-				console.log(multicastInterface[i])
 				try {
 					self.multi.addMembership(multicastAddress, multicastInterface[i])
 				} catch (error) {
@@ -692,7 +724,7 @@ instance.prototype.sendUDPCommand = function (command) {
 // ##########################
 instance.prototype.setVariables = function () {
 	self = this
-	const variables = []
+	var variables = []
 
 	variables.push({ name: 'tally_pgm', label: 'Tally Program' })
 	variables.push({ name: 'tally_pvw', label: 'Tally Preview' })
@@ -718,7 +750,7 @@ instance.prototype.setVariables = function () {
 instance.prototype.checkVariables = function () {
 	var self = this
 
-	if (self.config.model == 'HS410') {
+	if (self.config.model == 'HS410' && self.config.multicast == true) {
 		// Only tested and supported on AV-HS410
 		self.setVariable('tally_pgm', self.data.tally.pgm)
 		self.setVariable('tally_pvw', self.data.tally.pvw)
@@ -734,7 +766,42 @@ instance.prototype.checkVariables = function () {
 		self.setVariable('aux_2', self.data.tally.aux2)
 		self.setVariable('aux_3', self.data.tally.aux3)
 		self.setVariable('aux_4', self.data.tally.aux4)
+	} else if (self.config.model == 'HS410' && self.config.multicast == false) {
+		self.setVariable('tally_pgm', 'Not Enabled/Suported')
+		self.setVariable('tally_pvw', 'Not Enabled/Suported')
+		self.setVariable('bus_a', 'Not Enabled/Suported')
+		self.setVariable('bus_b', 'Not Enabled/Suported')
+		self.setVariable('key_fill', 'Not Enabled/Suported')
+		self.setVariable('key_source', 'Not Enabled/Suported')
+		self.setVariable('dsk_fill', 'Not Enabled/Suported')
+		self.setVariable('dsk_source', 'Not Enabled/Suported')
+		self.setVariable('pinp_1', 'Not Enabled/Suported')
+		self.setVariable('pinp_2', 'Not Enabled/Suported')
+		self.setVariable('aux_1', 'Not Enabled/Suported')
+		self.setVariable('aux_2', 'Not Enabled/Suported')
+		self.setVariable('aux_3', 'Not Enabled/Suported')
+		self.setVariable('aux_4', 'Not Enabled/Suported')
+
+		self.data = {
+			tally: {
+				pgm: '',
+				pvw: '',
+				busA: '',
+				busB: '',
+				keyF: '',
+				keyS: '',
+				dskF: '',
+				dskS: '',
+				pinP1: '',
+				pinP2: '',
+				aux1: '',
+				aux2: '',
+				aux3: '',
+				aux4: '',
+			},
+		}
 	}
+
 }
 
 // ##########################
@@ -779,75 +846,77 @@ instance.prototype.setFeedbacks = function () {
 				var opt = feedback.options
 				var tally = self.data.tally
 
+				input = HS410_INPUTS.find(({ id }) => id === opt.input).label
+
 				// Only avaliable with HS410
-				switch (opt.bus.id) {
+				switch (opt.bus) {
 					case '00':
-						if (opt.input.label == tally.busA) {
+						if (input == tally.busA) {
 							return true
 						}
 						break // Bus A
 					case '01':
-						if (opt.input.label == tally.busB) {
+						if (input == tally.busB) {
 							return true
 						}
 						break // Bus B
 					case '02':
-						if (opt.input.label == tally.pgm) {
+						if (input == tally.pgm) {
 							return true
 						}
 						break // PGM
 					case '03':
-						if (opt.input.label == tally.pvw) {
+						if (input == tally.pvw) {
 							return true
 						}
 						break // PVW
 					case '04':
-						if (opt.input.label == tally.keyF) {
+						if (input == tally.keyF) {
 							return true
 						}
 						break // Key Fill
 					case '05':
-						if (opt.input.label == tally.keyS) {
+						if (input == tally.keyS) {
 							return true
 						}
 						break // Key Source
 					case '06':
-						if (opt.input.label == tally.dskF) {
+						if (input == tally.dskF) {
 							return true
 						}
 						break // DSK Fill
 					case '07':
-						if (opt.input.label == tally.dskS) {
+						if (input == tally.dskS) {
 							return true
 						}
 						break // DSK Source
 					case '10':
-						if (opt.input.label == tally.pinP1) {
+						if (input == tally.pinP1) {
 							return true
 						}
 						break // PinP 1
 					case '11':
-						if (opt.input.label == tally.pinP2) {
+						if (input == tally.pinP2) {
 							return true
 						}
 						break // PinP 2
 					case '12':
-						if (opt.input.label == tally.aux1) {
+						if (input == tally.aux1) {
 							return true
 						}
 						break // AUX 1
 					case '13':
-						if (opt.input.label == tally.aux2) {
+						if (input == tally.aux2) {
 							return true
 						}
 						break // AUX 2
 					case '14':
-						if (opt.input.label == tally.aux3) {
+						if (input == tally.aux3) {
 							return true
 						}
 						break // AUX 3
 					case '15':
-						if (opt.input.label == tally.aux4) {
+						if (input == tally.aux4) {
 							return true
 						}
 						break // AUX 4

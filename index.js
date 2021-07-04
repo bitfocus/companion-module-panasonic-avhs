@@ -570,33 +570,16 @@ instance.prototype.listenMulticast = function () {
 
 		self.multi.bind(multicastPort, () => {
 			for (let i = 0; i < multicastInterface.length; i++) {
-				self.multi.addMembership(multicastAddress, multicastInterface[i])
+				console.log(multicastInterface[i])
+				try {
+					self.multi.addMembership(multicastAddress, multicastInterface[i])
+				} catch (error) {
+					// catch errors, as there wil proberply be at least some on one or more of your interfaces!
+					self.debug("Dont wory this is normal, and take a look if tally isn't working")
+					self.debug(error)
+				}
 			}
 		})
-
-		// Catch "EINVAL" error that orcures if the multicast port is already in use
-		// process.on('uncaughtException', function (err) {
-		// 	if (err.errno === 'EINVAL') {
-		// 		console.log('Multicast error: ' + err)
-		// 		debug('Multicast error: ' + err)
-		// 		// self.log('error', "TCP error: " + String(err));
-		// 		self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time")
-		// 	} else if (err.errno === 'EADDRINUSE') {
-		// 		console.log('Multicast error: ' + err)
-		// 		debug('Multicast error: ' + err)
-		// 		// self.log('error', "TCP error: " + String(err));
-		// 		self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time")
-		// 	} else if (err.errno === ' ECONNREFUSED') {
-		// 		console.log('Multicast error: ' + err)
-		// 		debug('Multicast error: ' + err)
-		// 		// self.log('error', "TCP error: " + String(err));
-		// 		self.log('error', "Multicast error: Please only use one module for AV-HS410's at a time")
-		// 	} else {
-		// 		console.log(err)
-		// 		process.exit(1)
-		// 	}
-		// 	reject(err)
-		// })
 		resolve()
 	})
 }

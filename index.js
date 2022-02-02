@@ -945,7 +945,7 @@ instance.prototype.actions = function (system) {
 	var self = this
 	var model = self.config.model
 
-	self.system.emit('instance_actions', self.id, {
+	self.setActions({
 		xpt: {
 			label: 'Bus crosspoint control',
 			options: [

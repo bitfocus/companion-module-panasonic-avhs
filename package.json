@@ -1,7 +1,7 @@
 {
 	"name": "panasonic-avhs",
 	"version": "1.0.5",
-	"api_version": "1.3.0",
+	"api_version": "1.0.0",
 	"keywords": [
 		"Vision Mixer"
 	],
@@ -17,5 +17,13 @@
 	"contributors": [
 		"Andreas H. Thomsen <mc-hauge@hotmail.com>"
 	],
-	"license": "MIT"
+	"license": "MIT",
+	"homepage": "https://github.com/bitfocus/companion-module-panasonic-avhs#readme",
+	"bugs": {
+		"url": "https://github.com/bitfocus/companion-module-panasonic-avhs/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bitfocus/companion-module-panasonic-avhs.git"
+	}
 }

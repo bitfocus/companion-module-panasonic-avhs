@@ -21,3 +21,7 @@ See HELP.md and LICENSE
 - Added Tally feedback for AV-HS410
 - Changed error handling on Multicast
 - Added the option to disble Tally/Multicast on AV-HS410, if dissabled it will default to port 60040 (only needs one plugin then)
+
+**V2.0.0**
+
+- Conversion to Companion v3.x API

@@ -10,7 +10,7 @@ Plugins for the AV-HS410 mixer can be found by creating a login and downloading 
 - Type in the device IP address.
 - The device will communicate over port 60040 as default, this can be changed in the settings.
 
-**Note** when using this module with more than one AV-HS410, then the variables will be mirrord on all instances of the module, and the values will only follow the first mixer.
+**Note** When using this module with more than one AV-HS410, the variables will be mirrored on all instances of the module, and the values will only follow the first mixer. This is due to the multicast protocol implemented by Panasonic.
 
 ### Available actions
 

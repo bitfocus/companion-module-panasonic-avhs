@@ -128,46 +128,46 @@ module.exports = {
 			case 'ABST':
 				switch (str[1]) {
 					case '00':
-						tally.busA = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.busA = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // Bus A
 					case '01':
-						tally.busB = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.busB = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // Bus B
 					case '02':
-						tally.pgm = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.pgm = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // PGM
 					case '03':
-						tally.pvw = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.pvw = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // PVW
 					case '04':
-						tally.keyF = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.keyF = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // Key Fill
 					case '05':
-						tally.keyS = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.keyS = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // Key Source
 					case '06':
-						tally.dskF = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.dskF = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // DSK Fill
 					case '07':
-						tally.dskS = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.dskS = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // DSK Source
 					case '10':
-						tally.pinP1 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.pinP1 = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // PinP 1
 					case '11':
-						tally.pinP2 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.pinP2 = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // PinP 2
 					case '12':
-						tally.aux1 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.aux1 = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // AUX 1
 					case '13':
-						tally.aux2 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.aux2 = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // AUX 2
 					case '14':
-						tally.aux3 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.aux3 = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // AUX 3
 					case '15':
-						tally.aux4 = HS410_INPUTS.find(({ id }) => id === str[2]).label
+						tally.aux4 = self.HS410_INPUTS.find(({ id }) => id === str[2]).label
 						break // AUX 4
 					default:
 						break

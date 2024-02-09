@@ -41,7 +41,7 @@ module.exports = {
 					let opt = feedback.options
 					let tally = self.data.tally
 
-					input = HS410_INPUTS.find(({ id }) => id === opt.input).label
+					let input = self.HS410_INPUTS.find(({ id }) => id === opt.input).label
 
 					// Only avaliable with HS410
 					switch (opt.bus) {

@@ -48,6 +48,22 @@ module.exports = {
 			}
 		};
 
+		actions.auto2 = {
+			name: 'Send AUTO transition (2)',
+			options: [
+				{
+					label: 'Target',
+					type: 'dropdown',
+					id: 'target',
+					choices: self[model + '_TARGETS'],
+					default: self[model + '_TARGETS'][0].id,
+				},
+			],
+			callback: async function (action) {
+				self.sendCommand('SAUT:' + action.options.target + ':0');
+			}
+		};
+
 		actions.cut = {
 			name: 'Send CUT transition',
 			options: [

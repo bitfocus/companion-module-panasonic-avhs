@@ -58,7 +58,7 @@ module.exports = {
 				id: 'multicastInfo',
 				width: 11,
 				label: 'Enable Multicast Support (Tally Info)',
-				value: 'If you are using an AV-HS410, enable this for multicast tally supoport, giving you variables and feedbacks for tally.',
+				value: 'If you are using an AV-HS410, enable this for multicast tally support, giving you variables and feedbacks for tally.',
 				isVisible: (config) => config.model == 'HS410'
 			},
 		]

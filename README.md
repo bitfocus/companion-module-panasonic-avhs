@@ -1,6 +1,7 @@
 # companion-module-panasonic-avhs
 
 See HELP.md and LICENSE
+
 **V2.1.0**
 
 - Added support for AV-HS6000, AV-HS410 and AV-HSW10

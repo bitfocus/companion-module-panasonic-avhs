@@ -24,7 +24,7 @@ module.exports = {
 			if (self.config.host) {
 				let portTCP = 60020;
 
-				if (self.config.model == 'HS410') {
+				if (self.config.model == 'HS410' || self.config.model == 'HS450') {
 					if (self.config.multicast == true) {
 						portTCP = 60020;
 					}
@@ -32,11 +32,14 @@ module.exports = {
 						portTCP = 60040;
 					}
 				}
-				else if (self.config.model == 'UHS500') {
-					portTCP = 62000;
-				} else {
-					// if HS50 is selected
+				else if (self.config.model == 'HS50') {
 					portTCP = 60040;
+				}
+				else {
+					// if port is user set, use that
+					if (self.config.port && self.config.port !== '') {
+						portTCP = self.config.port;
+					}
 				}
 
 				self.log('info', `Opening connection to ${self.config.host}:${portTCP}`);
@@ -50,13 +53,19 @@ module.exports = {
 				self.socket.on('connect', function () {
 					self.updateStatus(InstanceStatus.Ok);
 	
-					if (self.config.model == 'UHS500') {
+					if (self.config.model == 'UHS500' || self.config.model == 'HSW10') {
+						self.timer = setInterval(function () {
+							self.sendCommand('SPAT:0:00')
+						}, 10000) // 10 sec keepalive command
+					}
+
+					if (self.config.model == 'HS6000') { //TODO check if the HS6000 accepts SPAT as keepalive command. It does, but it returns an ERROR:02. Have to check if that is a problem.
 						self.timer = setInterval(function () {
 							self.sendCommand('SPAT:0:00')
 						}, 10000) // 10 sec keepalive command
 					}
 			
-					if (self.config.model == 'HS410') {
+					if (self.config.model == 'HS410' || self.config.model == 'HS450') {
 						self.timer = setInterval(function () {
 							self.sendCommand('SPAT:0:00')
 						}, 500) // 500 ms keepalive command

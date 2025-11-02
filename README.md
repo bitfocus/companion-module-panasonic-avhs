@@ -1,6 +1,6 @@
 # companion-module-panasonic-avhs
 
-See HELP.md and LICENSE
+See [HELP.md](./companion/HELP.md) and [LICENSE](./LICENSE)
 
 **V1.0.2**
 

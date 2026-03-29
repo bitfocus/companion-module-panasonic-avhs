@@ -30,7 +30,9 @@
 	},
 	"manufacturer": "Panasonic",
 	"products": [
-		"AV-HS50 / AV-HS410 / AV-UHS500"
+		"AV-HS50",
+		"AV-HS410",
+		"AV-UHS500"
 	],
 	"keywords": [
 		"Vision Mixer",

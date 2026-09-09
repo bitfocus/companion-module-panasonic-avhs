@@ -42,12 +42,23 @@ class avhsInstance extends InstanceBase {
 				keyS: '',
 				dskF: '',
 				dskS: '',
+				dsk2F: '',
+				dsk2S: '',
 				pinP1: '',
 				pinP2: '',
 				aux1: '',
 				aux2: '',
 				aux3: '',
 				aux4: '',
+				// HS450 source-bus entries (ABST buses 16-18)
+				aux1s: '',
+				pinP1s: '',
+				pinP2s: '',
+				// ATST:<target>:<state> — 00 off, 01 pause, 02 BKGD run, 04/05/06 on-ramp/on/off-ramp
+				autoTrans: {},
+				// ATLY:<pvw_hex>:<pgm_hex> physical-input bitmasks (bit0=IN1 … bit19=IN20)
+				atlyPvw: 0,
+				atlyPgm: 0,
 			},
 		}
 
@@ -82,14 +93,12 @@ class avhsInstance extends InstanceBase {
 		await this.getNetworkInterfaces();
 
 		this.initActions();
+		this.initFeedbacks();
+		this.initVariables();
+		this.initPresets();
 
-		if (this.config.multicast == true) {
-			this.initFeedbacks()
-			this.initVariables()
-			
-			this.checkFeedbacks()
-			this.checkVariables()
-		}
+		this.checkFeedbacks();
+		this.checkVariables();
 
 		this.initConnection();
 	}

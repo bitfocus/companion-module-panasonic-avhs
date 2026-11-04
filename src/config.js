@@ -15,7 +15,7 @@ module.exports = {
 				id: 'info2',
 				width: 12,
 				label: 'Information',
-				value: 'Default ports used in this module are 62000 for AV-UHS500, 60040 (60020 for multicast) for AV-HS410, and 60040 for AV-HS50.'
+				value: 'Default ports used in this module are 62000 for AV-UHS500, 60020 for AV-HS450, 60040 (60020 for multicast) for AV-HS410, and 60040 for AV-HS50.'
 			},
 			{
 				type: 'textinput',
@@ -29,12 +29,13 @@ module.exports = {
 				type: 'dropdown',
 				id: 'model',
 				label: 'Device Model',
-				choices: [
-					{ id: 'UHS500', label: 'AV-UHS500' },
-					{ id: 'HS410', label: 'AV-HS410' },
-					{ id: 'HS50', label: 'AW-HS50' },
-				],
-				default: 'HS410',
+			choices: [
+				{ id: 'UHS500', label: 'AV-UHS500' },
+				{ id: 'HS450', label: 'AV-HS450' },
+				{ id: 'HS410', label: 'AV-HS410' },
+				{ id: 'HS50', label: 'AW-HS50' },
+			],
+			default: 'HS410',
 				width: 6,
 			},
 			{
@@ -43,7 +44,7 @@ module.exports = {
 				width: 12,
 				label: 'Variables and AV-HS410 Support',
 				value: 'Make sure you have Multicast traffic enabled on your network. If multicast is disabled, then variables will not work with the AV-HS410',
-				isVisible: (config) => config.model == 'HS410'
+				isVisible: (config) => config.model == 'HS410' || config.model == 'HS450'
 			},
 			{
 				type: 'checkbox',
@@ -51,15 +52,15 @@ module.exports = {
 				width: 1,
 				label: 'Enable',
 				default: false,
-				isVisible: (config) => config.model == 'HS410'
+				isVisible: (config) => config.model == 'HS410' || config.model == 'HS450'
 			},
 			{
 				type: 'static-text',
 				id: 'multicastInfo',
 				width: 11,
 				label: 'Enable Multicast Support (Tally Info)',
-				value: 'If you are using an AV-HS410, enable this for multicast tally support, giving you variables and feedbacks for tally.',
-				isVisible: (config) => config.model == 'HS410'
+				value: 'If you are using an AV-HS410 or AV-HS450, enable this for multicast tally support, giving you variables and feedbacks for tally.',
+				isVisible: (config) => config.model == 'HS410' || config.model == 'HS450'
 			},
 		]
 	},
